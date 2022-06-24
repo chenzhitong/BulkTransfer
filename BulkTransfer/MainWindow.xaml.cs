@@ -1,21 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Neo;
+﻿using Neo;
 using Neo.Network.RPC;
 using Neo.SmartContract.Native;
 using Neo.Wallets;
+using NLog;
+using System;
+using System.Numerics;
+using System.Windows;
+using System.Windows.Controls;
 using Utility = Neo.Network.RPC.Utility;
 
 namespace BulkTransfer
@@ -25,19 +16,77 @@ namespace BulkTransfer
     /// </summary>
     public partial class MainWindow : Window
     {
+        Logger _logger;
+        bool _pause = false;
+
         public MainWindow()
         {
             InitializeComponent();
+            _logger = LogManager.GetCurrentClassLogger();
         }
 
         private void Transfer_Click(object sender, RoutedEventArgs e)
         {
-            QueryAndTransfer(true);
+            if (_pause) return;
+            _pause = true;
+            try
+            {
+                QueryAndTransfer(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"归集：\t{ex.Message}");
+                MessageBox.Show(ex.Message);
+            }
+            _pause = false;
         }
 
         private void Query_Click(object sender, RoutedEventArgs e)
         {
-            QueryAndTransfer();
+            if (_pause) return;
+            _pause = true;
+            try
+            {
+                QueryAndTransfer();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"查询余额：\t{ex.Message}");
+                MessageBox.Show(ex.Message);
+            }
+            _pause = false;
+        }
+
+        private void GAS_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pause) return;
+            _pause = true;
+            try
+            {
+                DistributeGAS();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"分发手续费：\t{ex.Message}");
+                MessageBox.Show(ex.Message);
+            }
+            _pause = false;
+        }
+
+        private void NEP17_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pause) return;
+            _pause = true;
+            try
+            {
+                DistributeNEP17(1080160090);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"分发NEP-17：\t{ex.Message}");
+                MessageBox.Show(ex.Message);
+            }
+            _pause = false;
         }
 
         private void QueryAndTransfer(bool transfer = false)
@@ -46,7 +95,8 @@ namespace BulkTransfer
             var seedNodeEndpoint = TextBoxSeedNode.Text;
             var contractHash = UInt160.Parse(TextBoxContractHash.Text);
             var privateKeyList = TextBoxPrivateKey.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-            var to = TextBoxToAddress.Text.Trim().ToScriptHash(0x35);
+            var toAddr = TextBoxToAddress.Text.Trim();
+            var to160 = toAddr.ToScriptHash(0x35);
 
             var client = new RpcClient(new Uri(seedNodeEndpoint));
             var api = new Nep17API(client);
@@ -61,7 +111,9 @@ namespace BulkTransfer
                 }
                 catch (Exception)
                 {
-                    TextBoxOutput.Text += $"私钥错误{wif}\n";
+                    var warn = $"私钥错误{wif}\n";
+                    TextBoxOutput.Text += warn;
+                    _logger.Warn(warn);
                     continue;
                 }
                 var account = Utility.GetKeyPair(wif);
@@ -72,25 +124,29 @@ namespace BulkTransfer
                 {
                     var balanceDeci = (double)balance / Math.Pow(10, deci);
                     TextBoxOutput.Text += $"{address.ToAddress(0x35)}\t{balanceDeci}{symbol}\t{gas}GAS\n";
+                    _logger.Info($"查询\t{address}\t{toAddr}\t{balance}{symbol}\t{gas}GAS");
                 }
-                if (transfer)
+                if (transfer && balance > 0)
                 {
                     try
                     {
-                        var tx = api.CreateTransferTxAsync(contractHash, account, to, balance).Result;
+                        var tx = api.CreateTransferTxAsync(contractHash, account, to160, balance).Result;
                         client.SendRawTransactionAsync(tx);
                         TextBoxOutput.Text += $"{tx.Hash}\n";
+                        _logger.Info($"归集：\t{address}\t{toAddr}\t{balance}{symbol}\t{tx.Hash}");
                     }
                     catch (Exception e)
                     {
-                        TextBoxOutput.Text += $"转账失败{e.Message}\n";
+                        var warn = $"归集：转账失败{e.Message}\n";
+                        TextBoxOutput.Text += warn;
+                        _logger.Warn(warn);
                     }
                 }
             }
             TextBoxOutput.Text += "End\n";
         }
 
-        private void GAS_Click(object sender, RoutedEventArgs e)
+        private void DistributeGAS()
         {
             TextBoxOutput.Text = string.Empty;
             var gasPriKey = TextBoxGasPrivateKey.Text;
@@ -100,10 +156,13 @@ namespace BulkTransfer
             }
             catch (Exception)
             {
-                TextBoxOutput.Text += $"私钥错误{gasPriKey}\n";
+                var warn = $"私钥错误{gasPriKey}\n";
+                TextBoxOutput.Text += warn;
+                _logger.Warn(warn);
                 return;
             }
             var fromAccount = Utility.GetKeyPair(gasPriKey);
+            var fromAddress = Utility.GetScriptHash(fromAccount.PublicKey.ToString(), ProtocolSettings.Default);
             var seedNodeEndpoint = TextBoxSeedNode.Text;
             var contractHash = UInt160.Parse(TextBoxContractHash.Text);
             var client = new RpcClient(new Uri(seedNodeEndpoint));
@@ -117,7 +176,9 @@ namespace BulkTransfer
                 }
                 catch (Exception)
                 {
-                    TextBoxOutput.Text += $"私钥错误{wif}\n";
+                    var warn = $"私钥错误{wif}\n";
+                    TextBoxOutput.Text += warn;
+                    _logger.Warn(warn);
                     continue;
                 }
                 var toAccount = Utility.GetKeyPair(wif);
@@ -128,14 +189,72 @@ namespace BulkTransfer
                 {
                     try
                     {
-                        var tx = api.CreateTransferTxAsync(NativeContract.GAS.Hash, fromAccount, toAddress, 20000000).Result;
+                        var amount = new BigInteger((0.2 - gas) * 100000000);
+                        var tx = api.CreateTransferTxAsync(NativeContract.GAS.Hash, fromAccount, toAddress, amount).Result;
                         client.SendRawTransactionAsync(tx);
                         TextBoxOutput.Text += $"{tx.Hash}\n";
+                        _logger.Info($"分发手续费：\t{fromAddress}\t{toAddress}\t{amount}GAS\t{tx.Hash}");
                     }
                     catch (Exception ex)
                     {
-                        TextBoxOutput.Text += $"转账失败{ex.Message}\n";
+                        var warn = $"分发手续费：转账失败{ex.Message}\n";
+                        TextBoxOutput.Text += warn;
+                        _logger.Warn(warn);
                     }
+                }
+            }
+            TextBoxOutput.Text += "End\n";
+        }
+
+        private void DistributeNEP17(BigInteger amount)
+        {
+            TextBoxOutput.Text = string.Empty;
+            var gasPriKey = TextBoxGasPrivateKey.Text;
+            try
+            {
+                Wallet.GetPrivateKeyFromWIF(gasPriKey);
+            }
+            catch (Exception)
+            {
+                var warn = $"私钥错误{gasPriKey}\n";
+                TextBoxOutput.Text += warn;
+                _logger.Warn(warn);
+                return;
+            }
+            var fromAccount = Utility.GetKeyPair(gasPriKey);
+            var fromAddress = Utility.GetScriptHash(fromAccount.PublicKey.ToString(), ProtocolSettings.Default);
+            var seedNodeEndpoint = TextBoxSeedNode.Text;
+            var contractHash = UInt160.Parse(TextBoxContractHash.Text);
+            var client = new RpcClient(new Uri(seedNodeEndpoint));
+            var api = new Nep17API(client);
+            var privateKeyList = TextBoxPrivateKey.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            foreach (var wif in privateKeyList)
+            {
+                try
+                {
+                    Wallet.GetPrivateKeyFromWIF(wif);
+                }
+                catch (Exception)
+                {
+                    var warn = $"私钥错误{wif}\n";
+                    TextBoxOutput.Text += warn;
+                    _logger.Warn(warn);
+                    continue;
+                }
+                var toAccount = Utility.GetKeyPair(wif);
+                var toAddress = Utility.GetScriptHash(toAccount.PublicKey.ToString(), ProtocolSettings.Default);
+                try
+                {
+                    var tx = api.CreateTransferTxAsync(contractHash, fromAccount, toAddress, amount).Result;
+                    client.SendRawTransactionAsync(tx);
+                    TextBoxOutput.Text += $"{tx.Hash}\n";
+                    _logger.Info($"分发NEP-17：\t{fromAddress}\t{toAddress}\t{amount}GAS\t{tx.Hash}");
+                }
+                catch (Exception ex)
+                {
+                    var warn = $"分发NEP-17：转账失败{ex.Message}\n";
+                    TextBoxOutput.Text += warn;
+                    _logger.Warn(warn);
                 }
             }
             TextBoxOutput.Text += "End\n";

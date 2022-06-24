@@ -9,6 +9,13 @@
 
   <ItemGroup>
     <PackageReference Include="Neo.Network.RPC.RpcClient" Version="3.3.0" />
+    <PackageReference Include="NLog" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="nlog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

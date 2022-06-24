@@ -33,7 +33,7 @@
             </DockPanel>
             <DockPanel Grid.Row="3">
                 <Label Content="手续费私钥：" Height="30" Width="75"/>
-                <TextBox Name="TextBoxGasPrivateKey" Height="20" Width="auto" FontFamily="幼圆" Text=""/>
+                <TextBox Name="TextBoxGasPrivateKey" ToolTip="从该私钥对应的地址里支付手续费" Height="20" FontFamily="幼圆" Text=""/>
             </DockPanel>
             <DockPanel VerticalAlignment="Top" Grid.Row="4">
                 <Label Content="待归集私钥：" Height="30" Width="75"/>
@@ -42,9 +42,10 @@
             <DockPanel Grid.Row="5">
                 <Label Content="" Height="30" Width="75"/>
                 <StackPanel Orientation="Horizontal">
-                    <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Query_Click" Content="查询余额"/>
+                    <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Query_Click" Content="查询余额" ToolTip="查询&quot;待归集私钥&quot;里的NEP-17资产余额和GAS余额"/>
                     <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="GAS_Click" Content="分发手续费" ToolTip="从&quot;手续费私钥&quot;对应的地址为每个有NEP-17余额的待归集地址发送一定的GAS作为批量转账时的手续费"/>
-                    <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Transfer_Click" Content="批量转账" ToolTip="将&quot;待归集私钥&quot;里的NEP-17资产转到归集地址"/>
+                    <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="NEP17_Click" Content="分发NEP-17（测试）" ToolTip="测试用"/>
+                    <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Transfer_Click" Content="归集" ToolTip="将&quot;待归集私钥&quot;里的NEP-17资产转到归集地址"/>
                 </StackPanel>
             </DockPanel>
 

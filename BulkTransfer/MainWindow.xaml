@@ -3,51 +3,103 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
-        Title="NEP-17 在线归集工具" MinHeight="400" MinWidth="820" Height="450" Width="850">
+        mc:Ignorable="d" SizeChanged="Window_SizeChanged"
+        Title="NEP-17 批量转账工具" MinHeight="400" MinWidth="850" Height="450" Width="900">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"></RowDefinition>
-                <RowDefinition Height="auto"></RowDefinition>
-                <RowDefinition Height="auto"></RowDefinition>
-                <RowDefinition Height="auto"></RowDefinition>
-                <RowDefinition Height="*"></RowDefinition>
-                <RowDefinition Height="auto"></RowDefinition>
-            </Grid.RowDefinitions>
-            <DockPanel Grid.Row="0">
-                <Label Content="种子节点：" Height="30" Width="75"/>
-                <TextBox Name="TextBoxSeedNode" Height="20" Width="auto" FontFamily="幼圆" Text="http://127.0.0.1:10332"/>
-            </DockPanel>
-            <DockPanel Grid.Row="1">
-                <Label Content="资产哈希：" Height="30" Width="75"/>
-                <TextBox Name="TextBoxContractHash" Height="20" Width="auto" FontFamily="幼圆" Text="0xa51b176d6b9bafa1f0ff8515e462d78c296e52a3"/>
-            </DockPanel>
-            <DockPanel Grid.Row="2">
-                <Label Content="归集地址：" Height="30" Width="75"/>
-                <TextBox Name="TextBoxToAddress" Height="20" Width="auto" FontFamily="幼圆" Text="NSuyiLqEfEQZsLJawCbmXW154StRUwdWoM"/>
-            </DockPanel>
-            <DockPanel Grid.Row="3">
-                <Label Content="手续费私钥：" Height="30" Width="75"/>
-                <TextBox Name="TextBoxGasPrivateKey" ToolTip="从该私钥对应的地址里支付手续费" Height="20" FontFamily="幼圆" Text=""/>
-            </DockPanel>
-            <DockPanel VerticalAlignment="Top" Grid.Row="4">
-                <Label Content="待归集私钥：" Height="30" Width="75"/>
-                <TextBox Name="TextBoxPrivateKey" Width="auto" MinHeight="180" FontFamily="幼圆" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" Text=""/>
-            </DockPanel>
-            <DockPanel Grid.Row="5">
-                <Label Content="" Height="30" Width="75"/>
-                <StackPanel Orientation="Horizontal">
-                    <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Query_Click" Content="查询余额" ToolTip="查询&quot;待归集私钥&quot;里的NEP-17资产余额和GAS余额"/>
-                    <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="GAS_Click" Content="分发手续费" ToolTip="从&quot;手续费私钥&quot;对应的地址为每个有NEP-17余额的待归集地址发送一定的GAS作为批量转账时的手续费"/>
-                    <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="NEP17_Click" Content="分发NEP-17（测试）" ToolTip="测试用"/>
-                    <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Transfer_Click" Content="归集" ToolTip="将&quot;待归集私钥&quot;里的NEP-17资产转到归集地址"/>
-                </StackPanel>
-            </DockPanel>
+            <TabControl x:Name="TabControl1">
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="批量付款" FontSize="20"/>
+                            <TextBlock Text="一对多转账" Margin="8,0,0,0" FontSize="10" Foreground="Gray" VerticalAlignment="Bottom"></TextBlock>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition x:Name="TabARow" Height="*"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <DockPanel Grid.Row="0">
+                            <Label Content="资产哈希：" Height="30" Width="75"/>
+                            <TextBox Name="TabAContractHash" Height="20" Width="auto" FontFamily="幼圆" Text="0xa51b176d6b9bafa1f0ff8515e462d78c296e52a3"/>
+                        </DockPanel>
+                        <DockPanel Grid.Row="1">
+                            <Label Content="付款私钥：" Height="30" Width="75"/>
+                            <TextBox Name="TabAPrivateKey" ToolTip="从该私钥对应的地址里付款" Height="20" FontFamily="幼圆" Text=""/>
+                        </DockPanel>
+                        <DockPanel VerticalAlignment="Top" Grid.Row="2">
+                            <Label Content="收款地址&#13;和金额：" Height="60" Width="75"/>
+                            <TextBox Name="TabAToList" Width="auto" MinHeight="180" FontFamily="幼圆" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" Text=""/>
+                        </DockPanel>
+                        <DockPanel Grid.Row="3">
+                            <Label Content="" Height="30" Width="75"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="BuckTransfer_Click" Content="批量付款"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Grid>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="归集" FontSize="20"/>
+                            <TextBlock Text="多对一转账" Margin="8,0,0,0" FontSize="10" Foreground="Gray" VerticalAlignment="Bottom"></TextBlock>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition x:Name="TabBRow" Height="*"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <DockPanel Grid.Row="0">
+                            <Label Content="资产哈希：" Height="30" Width="75"/>
+                            <TextBox Name="TabBContractHash" Height="20" Width="auto" FontFamily="幼圆" Text="0xa51b176d6b9bafa1f0ff8515e462d78c296e52a3"/>
+                        </DockPanel>
+                        <DockPanel VerticalAlignment="Top" Grid.Row="1">
+                            <Label Content="待归集私钥：" Height="30" Width="75"/>
+                            <TextBox Name="TabBPrivateKey" Width="auto" MinHeight="180" FontFamily="幼圆" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Visible" Text=""/>
+                        </DockPanel>
+                        <DockPanel Grid.Row="2">
+                            <Label Content="归集地址：" Height="30" Width="75" ToolTip="收款地址"/>
+                            <TextBox Name="TabBToAddress" Height="20" Width="auto" FontFamily="幼圆" Text="NSuyiLqEfEQZsLJawCbmXW154StRUwdWoM"/>
+                        </DockPanel>
+                        <DockPanel Grid.Row="3">
+                            <Label Content="" Height="30" Width="75"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Query_Click" Content="查询余额" ToolTip="查询&quot;待归集私钥&quot;里的NEP-17资产余额和GAS余额"/>
+                                <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="GAS_Click" Content="分发手续费" ToolTip="该按钮会统计上面列表中有NEP-17余额的地址，跳转到&quot;批量付款&quot;页面并自动填写资产哈希、收款地址和金额"/>
+                                <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Transfer_Click" Content="归集" ToolTip="将&quot;待归集私钥&quot;里的NEP-17资产转到归集地址"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Grid>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="设置" FontSize="20"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <DockPanel Grid.Row="0">
+                            <Label Content="种子节点：" Height="30" Width="75"/>
+                            <TextBox Name="TabCSeedNode" Height="20" Width="auto" FontFamily="幼圆" Text="http://127.0.0.1:10332"/>
+                        </DockPanel>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+            
 
         </Grid>
         <TextBox Grid.Column="1" Name="TextBoxOutput" Width="auto" Height="auto" Margin="5" FontFamily="幼圆"></TextBox>

@@ -41,6 +41,7 @@ namespace BulkTransfer
             try
             {
                 BuckTransfer(action);
+                MessageBox.Show("发送成功");
             }
             catch (Exception ex)
             {
@@ -49,24 +50,7 @@ namespace BulkTransfer
             }
             _pause = false;
         }
-
-        private void Transfer_Click(object sender, RoutedEventArgs e)
-        {
-            if (_pause) return;
-            _pause = true;
-            var action = ((Button)sender).Content.ToString();
-            try
-            {
-                QueryAndTransfer(action, true);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"{action}：{ex.Message}");
-                MessageBox.Show(ex.Message);
-            }
-            _pause = false;
-        }
-
+        
         /// <summary>
         /// Tab B 查询余额按钮
         /// </summary>
@@ -118,6 +102,28 @@ namespace BulkTransfer
             TabAContractHash.Text = NativeContract.GAS.Hash.ToString();
             TabAToList.Text = toList;
             TabControl1.SelectedIndex = 0;
+            MessageBox.Show("已自动填写了GAS的资产哈希、收款地址和转账金额，请根据需要进行编辑，然后点击批量付款", "请在该页面继续操作");
+        }
+
+        /// <summary>
+        /// Tab B 归集按钮
+        /// </summary>
+        private void Pooled_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pause) return;
+            _pause = true;
+            var action = ((Button)sender).Content.ToString();
+            try
+            {
+                QueryAndTransfer(action, true);
+                MessageBox.Show("发送成功");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"{action}：{ex.Message}");
+                MessageBox.Show(ex.Message);
+            }
+            _pause = false;
         }
 
         private void QueryAndTransfer(string? action, bool transfer = false)
@@ -155,18 +161,30 @@ namespace BulkTransfer
                 if (!transfer)
                 {
                     var balanceDeci = (double)balance / Math.Pow(10, deci);
-                    TextBoxOutput.Text += $"{fromAddr}\t{balanceDeci}{symbol}\t{gas}GAS\n";
-                    _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{balanceDeci}{symbol}\t{gas}GAS");
+                    if (contractHash == NativeContract.GAS.Hash)
+                    {
+                        TextBoxOutput.Text += $"{fromAddr}\t{balanceDeci}{symbol}\n";
+                        _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{balanceDeci}{symbol}");
+                    }
+                    else
+                    {
+                        TextBoxOutput.Text += $"{fromAddr}\t{balanceDeci}{symbol}\t{gas}GAS\n";
+                        _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{balanceDeci}{symbol}\t{gas}GAS");
+                    }
+                        
                 }
                 //归集
                 if (transfer && balance > 0 && fromAddr != toAddr)
                 {
                     try
                     {
+                        if (contractHash == NativeContract.GAS.Hash && balance > 20000000)
+                            balance -= 20000000;
                         var tx = api.CreateTransferTxAsync(contractHash, account, to160, balance).Result;
                         client.SendRawTransactionAsync(tx);
                         TextBoxOutput.Text += $"{tx.Hash}\n";
                         var balanceDeci = (double)balance / Math.Pow(10, deci);
+                        
                         _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{balanceDeci}{symbol}\t{tx.Hash}");
                     }
                     catch (Exception e)
@@ -177,7 +195,6 @@ namespace BulkTransfer
                     }
                 }
             }
-            TextBoxOutput.Text += "End\n";
         }
 
         private void BuckTransfer(string? action)
@@ -250,7 +267,6 @@ namespace BulkTransfer
                     _logger.Warn(warn);
                 }
             }
-            TextBoxOutput.Text += "End\n";
         }
 
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -262,6 +278,24 @@ namespace BulkTransfer
         {
             TabAToList.Height = TabARow.ActualHeight;
             TabBPrivateKey.Height = TabBRow.ActualHeight;
+        }
+
+        private void Ping_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var height = LoadClient().GetBlockCountAsync().Result;
+                MessageBox.Show($"连接成功，高度为 {height}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"连接失败\t{ex.Message}");
+            }
+        }
+
+        private void Edit_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("notepad.exe", "config.json");
         }
     }
 }

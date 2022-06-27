@@ -77,7 +77,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Query_Click" Content="查询余额" ToolTip="查询&quot;待归集私钥&quot;里的NEP-17资产余额和GAS余额"/>
                                 <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="GAS_Click" Content="分发手续费" ToolTip="该按钮会统计上面列表中有NEP-17余额的地址，跳转到&quot;批量付款&quot;页面并自动填写资产哈希、收款地址和金额"/>
-                                <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Transfer_Click" Content="归集" ToolTip="将&quot;待归集私钥&quot;里的NEP-17资产转到归集地址"/>
+                                <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Pooled_Click" Content="归集" ToolTip="将&quot;待归集私钥&quot;里的NEP-17资产转到归集地址"/>
                             </StackPanel>
                         </DockPanel>
                     </Grid>
@@ -91,18 +91,27 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
                         </Grid.RowDefinitions>
-                        <DockPanel Grid.Row="0">
-                            <Label Content="种子节点：" Height="30" Width="75"/>
-                            <TextBox Name="TabCSeedNode" Height="20" Width="auto" FontFamily="幼圆" Text="http://127.0.0.1:10332"/>
-                        </DockPanel>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="种子节点：" Height="30" Width="75"/>
+                        <TextBox Grid.Column="1" Name="TabCSeedNode" Height="20" Width="auto" FontFamily="幼圆" Text="http://127.0.0.1:10332"/>
+                        <Button Grid.Column="2" Margin="10" Width="100" Content="连通性测试" Click="Ping_Click"></Button>
+                        
+                        <Label Grid.Row="1" Grid.Column="0" Content="网络配置：" Height="30" Width="75"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Height="20" Width="auto" FontFamily="幼圆" Text="config.json" IsReadOnly="True"/>
+                        <Button Grid.Row="1" Grid.Column="2" Height="20" Content="编辑" Margin="10" Click="Edit_Click"></Button>
                     </Grid>
                 </TabItem>
             </TabControl>
             
 
         </Grid>
-        <TextBox Grid.Column="1" Name="TextBoxOutput" Width="auto" Height="auto" Margin="5" FontFamily="幼圆"></TextBox>
+        <TextBox Grid.Column="1" Name="TextBoxOutput" Width="auto" Height="auto" Margin="5" FontFamily="幼圆" IsReadOnly="True"></TextBox>
     </Grid>
     
 </Window>

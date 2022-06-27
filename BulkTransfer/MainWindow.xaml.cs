@@ -156,7 +156,7 @@ namespace BulkTransfer
                 {
                     var balanceDeci = (double)balance / Math.Pow(10, deci);
                     TextBoxOutput.Text += $"{fromAddr}\t{balanceDeci}{symbol}\t{gas}GAS\n";
-                    _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{balance}{symbol}\t{gas}GAS");
+                    _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{balanceDeci}{symbol}\t{gas}GAS");
                 }
                 //归集
                 if (transfer && balance > 0 && fromAddr != toAddr)
@@ -166,7 +166,8 @@ namespace BulkTransfer
                         var tx = api.CreateTransferTxAsync(contractHash, account, to160, balance).Result;
                         client.SendRawTransactionAsync(tx);
                         TextBoxOutput.Text += $"{tx.Hash}\n";
-                        _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{balance}{symbol}\t{tx.Hash}");
+                        var balanceDeci = (double)balance / Math.Pow(10, deci);
+                        _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{balanceDeci}{symbol}\t{tx.Hash}");
                     }
                     catch (Exception e)
                     {
@@ -231,13 +232,16 @@ namespace BulkTransfer
             {
                 var toAddr = to.Split(' ')[0];
                 var to160 = toAddr.ToScriptHash(ProtocolSettings.Default.AddressVersion);
-                var amount = new BigInteger(Convert.ToDouble(to.Split(' ')[1]) * Math.Pow(10, deci));
+                var amountDeci = Convert.ToDouble(to.Split(' ')[1]);
+                var amount = new BigInteger(amountDeci * Math.Pow(10, deci));
                 try
                 {
                     var tx = api.CreateTransferTxAsync(contractHash, fromAccount, to160, amount).Result;
                     client.SendRawTransactionAsync(tx);
                     TextBoxOutput.Text += $"{tx.Hash}\n";
-                    _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{amount}{symbol}\t{tx.Hash}");
+
+                    var balanceDeci = (double)balance / Math.Pow(10, deci);
+                    _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{amountDeci}{symbol}\t{tx.Hash}");
                 }
                 catch (Exception ex)
                 {

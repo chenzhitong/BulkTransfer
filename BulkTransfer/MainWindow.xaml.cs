@@ -25,6 +25,11 @@ namespace BulkTransfer
             _logger = LogManager.GetCurrentClassLogger();
         }
 
+        private RpcClient LoadClient()
+        {
+            return new RpcClient(new Uri(TabCSeedNode.Text.Trim()), null, null, ProtocolSettings.Load("config.json"));
+        }
+
         /// <summary>
         /// Tab A 批量付款按钮
         /// </summary>
@@ -39,7 +44,7 @@ namespace BulkTransfer
             }
             catch (Exception ex)
             {
-                _logger.Error($"{action}：\t{ex.Message}");
+                _logger.Error($"{action}：{ex.Message}");
                 MessageBox.Show(ex.Message);
             }
             _pause = false;
@@ -56,7 +61,7 @@ namespace BulkTransfer
             }
             catch (Exception ex)
             {
-                _logger.Error($"{action}：\t{ex.Message}");
+                _logger.Error($"{action}：{ex.Message}");
                 MessageBox.Show(ex.Message);
             }
             _pause = false;
@@ -76,7 +81,7 @@ namespace BulkTransfer
             }
             catch (Exception ex)
             {
-                _logger.Error($"{action}：\t{ex.Message}");
+                _logger.Error($"{action}：{ex.Message}");
                 MessageBox.Show(ex.Message);
             }
             _pause = false;
@@ -90,7 +95,7 @@ namespace BulkTransfer
             var contractHash = UInt160.Parse(TabBContractHash.Text.Trim());
             var privateKeyList = TabBPrivateKey.Text.Trim().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
             var toList = string.Empty;
-            var client = new RpcClient(new Uri(TabCSeedNode.Text.Trim()));
+            var client = LoadClient();
             var api = new Nep17API(client);
             foreach (var wif in privateKeyList)
             {
@@ -98,16 +103,14 @@ namespace BulkTransfer
                 {
                     var account = Utility.GetKeyPair(wif);
                     var from160 = Utility.GetScriptHash(account.PublicKey.ToString(), ProtocolSettings.Default);
-                    var fromAddr = from160.ToAddress(0x35);
+                    var fromAddr = from160.ToAddress(ProtocolSettings.Default.AddressVersion);
                     var balance = api.BalanceOfAsync(contractHash, from160).Result;
                     if(balance > 0)
                     toList += $"{fromAddr} 0.2\r\n";
                 }
                 catch (Exception)
                 {
-                    var warn = $"私钥错误{wif}\n";
-                    TextBoxOutput.Text += warn;
-                    _logger.Warn(warn);
+                    TextBoxOutput.Text += $"私钥错误：{wif}\n";
                     return;
                 }
             }
@@ -123,9 +126,9 @@ namespace BulkTransfer
             var contractHash = UInt160.Parse(TabBContractHash.Text.Trim());
             var privateKeyList = TabBPrivateKey.Text.Trim().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
             var toAddr = TabBToAddress.Text.Trim();
-            var to160 = toAddr.ToScriptHash(0x35);
+            var to160 = toAddr.ToScriptHash(ProtocolSettings.Default.AddressVersion);
 
-            var client = new RpcClient(new Uri(TabCSeedNode.Text.Trim()));
+            var client = LoadClient();
             var api = new Nep17API(client);
             var deci = api.DecimalsAsync(contractHash).Result;
             var symbol = api.SymbolAsync(contractHash).Result;
@@ -137,9 +140,7 @@ namespace BulkTransfer
                 }
                 catch (Exception)
                 {
-                    var warn = $"私钥错误{wif}\n";
-                    TextBoxOutput.Text += warn;
-                    _logger.Warn(warn);
+                    TextBoxOutput.Text += $"私钥错误：{wif}\n";
                     return;
                 }
             }
@@ -147,30 +148,29 @@ namespace BulkTransfer
             {
                 var account = Utility.GetKeyPair(wif);
                 var from160 = Utility.GetScriptHash(account.PublicKey.ToString(), ProtocolSettings.Default);
-                var fromAddr = from160.ToAddress(0x35);
+                var fromAddr = from160.ToAddress(ProtocolSettings.Default.AddressVersion);
                 var balance = api.BalanceOfAsync(contractHash, from160).Result;
-                var gas = Math.Round((double)api.BalanceOfAsync(NativeContract.GAS.Hash, from160).Result / 100000000.0, 4);
+                var gas = Math.Round((double)api.BalanceOfAsync(NativeContract.GAS.Hash, from160).Result / Math.Pow(10, NativeContract.GAS.Decimals), 4);
                 //查询余额
                 if (!transfer)
                 {
                     var balanceDeci = (double)balance / Math.Pow(10, deci);
                     TextBoxOutput.Text += $"{fromAddr}\t{balanceDeci}{symbol}\t{gas}GAS\n";
-                    _logger.Info($"{action}：\t{fromAddr}\t{toAddr}\t{balance}{symbol}\t{gas}GAS");
+                    _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{balance}{symbol}\t{gas}GAS");
                 }
                 //归集
-                if (transfer && balance > 0)
+                if (transfer && balance > 0 && fromAddr != toAddr)
                 {
-                    if (fromAddr == toAddr) continue;
                     try
                     {
                         var tx = api.CreateTransferTxAsync(contractHash, account, to160, balance).Result;
                         client.SendRawTransactionAsync(tx);
                         TextBoxOutput.Text += $"{tx.Hash}\n";
-                        _logger.Info($"{action}：\t{fromAddr}\t{toAddr}\t{balance}{symbol}\t{tx.Hash}");
+                        _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{balance}{symbol}\t{tx.Hash}");
                     }
                     catch (Exception e)
                     {
-                        var warn = $"{action}：转账失败{e.Message}\n";
+                        var warn = $"{action}：转账失败\t{e.Message}\n";
                         TextBoxOutput.Text += warn;
                         _logger.Warn(warn);
                     }
@@ -190,37 +190,35 @@ namespace BulkTransfer
             }
             catch (Exception)
             {
-                var warn = $"私钥错误{fromPriKey}\n";
-                TextBoxOutput.Text += warn;
-                _logger.Warn(warn);
+                TextBoxOutput.Text += $"私钥错误{fromPriKey}\n";
                 return;
             }
 
             var fromAccount = Utility.GetKeyPair(fromPriKey);
-            var fromAddress = Utility.GetScriptHash(fromAccount.PublicKey.ToString(), ProtocolSettings.Default);
+            var from160 = Utility.GetScriptHash(fromAccount.PublicKey.ToString(), ProtocolSettings.Default);
+            var fromAddr = from160.ToAddress(ProtocolSettings.Default.AddressVersion);
             var contractHash = UInt160.Parse(TabAContractHash.Text.Trim());
-            var client = new RpcClient(new Uri(TabCSeedNode.Text.Trim()));
+            var client = LoadClient();
             var api = new Nep17API(client);
             var deci = api.DecimalsAsync(contractHash).Result;
             var toList = TabAToList.Text.Trim().Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var symbol = api.SymbolAsync(contractHash).Result;
             //验证收款列表的格式
             var sum = .0;
             foreach (var to in toList)
             {
                 try
                 {
-                    var toAddress = to.Split(' ')[0].ToScriptHash(0x35);
+                    var toAddress = to.Split(' ')[0].ToScriptHash(ProtocolSettings.Default.AddressVersion);
                     sum += Convert.ToDouble(to.Split(' ')[1]);
                 }
                 catch (Exception)
                 {
-                    var warn = $"收款列表格式错误：{to}\n";
-                    TextBoxOutput.Text += warn;
-                    _logger.Warn(warn);
+                    TextBoxOutput.Text += $"收款列表格式错误：{to}\n";
                     return;
                 }
             }
-            var balance = (double)api.BalanceOfAsync(contractHash, fromAddress).Result / Math.Pow(10, deci);
+            var balance = (double)api.BalanceOfAsync(contractHash, from160).Result / Math.Pow(10, deci);
             if (balance < sum)
             {
                 var warn = $"付款地址余额不足：{balance} < {sum}\n";
@@ -231,18 +229,19 @@ namespace BulkTransfer
 
             foreach (var to in toList)
             {
-                var toAddress = to.Split(' ')[0].ToScriptHash(0x35);
+                var toAddr = to.Split(' ')[0];
+                var to160 = toAddr.ToScriptHash(ProtocolSettings.Default.AddressVersion);
                 var amount = new BigInteger(Convert.ToDouble(to.Split(' ')[1]) * Math.Pow(10, deci));
                 try
                 {
-                    var tx = api.CreateTransferTxAsync(contractHash, fromAccount, toAddress, amount).Result;
+                    var tx = api.CreateTransferTxAsync(contractHash, fromAccount, to160, amount).Result;
                     client.SendRawTransactionAsync(tx);
                     TextBoxOutput.Text += $"{tx.Hash}\n";
-                    _logger.Info($"{action}：\t{fromAddress}\t{toAddress}\t{amount}GAS\t{tx.Hash}");
+                    _logger.Info($"{action}：{fromAddr}\t{toAddr}\t{amount}{symbol}\t{tx.Hash}");
                 }
                 catch (Exception ex)
                 {
-                    var warn = $"{action}：转账失败{ex.Message}\n";
+                    var warn = $"{action}：转账失败\t{ex.Message}\n";
                     TextBoxOutput.Text += warn;
                     _logger.Warn(warn);
                 }

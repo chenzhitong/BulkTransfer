@@ -4,9 +4,11 @@ using Neo.SmartContract.Native;
 using Neo.Wallets;
 using NLog;
 using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using Utility = Neo.Network.RPC.Utility;
 
 namespace BulkTransfer
@@ -295,7 +297,13 @@ namespace BulkTransfer
 
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Process.Start("notepad.exe", "config.json");
+            Process.Start("notepad.exe", "config.json");
+        }
+
+        private void Hyperlink_Click(object sender, RoutedEventArgs e)
+        {
+            var link = sender as Hyperlink;
+            Process.Start("explorer.exe", link.NavigateUri.ToString());
         }
     }
 }

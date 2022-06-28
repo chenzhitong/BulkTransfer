@@ -11,7 +11,7 @@
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid>
-            <TabControl x:Name="TabControl1">
+            <TabControl x:Name="TabControl1" SelectionChanged="TabControl1_SelectionChanged">
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">

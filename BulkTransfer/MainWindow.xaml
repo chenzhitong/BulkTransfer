@@ -7,8 +7,9 @@
         Title="NEP-17 批量转账工具" MinHeight="400" MinWidth="850" Height="450" Width="900">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="auto"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid>
             <TabControl x:Name="TabControl1" SelectionChanged="TabControl1_SelectionChanged">
@@ -95,6 +96,7 @@
                             <RowDefinition Height="*"></RowDefinition>
                             <RowDefinition Height="auto"></RowDefinition>
                             <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"></ColumnDefinition>
@@ -104,25 +106,37 @@
                         <Label Grid.Column="0" Content="种子节点：" Height="30" Width="75"/>
                         <TextBox Grid.Column="1" Name="TabCSeedNode" Height="20" Width="auto" FontFamily="幼圆" Text="http://127.0.0.1:10332"/>
                         <Button Grid.Column="2" Margin="10" Width="100" Content="连通性测试" Click="Ping_Click"></Button>
-                        
+
                         <Label Grid.Row="1" Grid.Column="0" Content="网络配置：" Height="30" Width="75"/>
                         <TextBox Grid.Row="1" Grid.Column="1" Height="20" Width="auto" FontFamily="幼圆" Text="config.json" IsReadOnly="True"/>
                         <Button Grid.Row="1" Grid.Column="2" Height="20" Content="编辑" Margin="10" Click="Edit_Click"></Button>
 
-                        <Label Grid.Row="3" Content="版本：" />
-                        <Label Grid.Row="3" Grid.ColumnSpan="2" Grid.Column="1" Content="v0.2" />
+                        <Label Grid.Row="3" Content="软件版本：" />
+                        <Label Grid.Row="3" Grid.ColumnSpan="2" Grid.Column="1" Content="v0.3" />
+
+                        <Label Grid.Row="4" Content="Neo版本：" />
+                        <Label Grid.Row="4" Grid.ColumnSpan="2" Grid.Column="1" Content="v3.3.0" />
                         
-                        <Label Grid.Row="4" Content="源码：" />
-                        <Label Grid.Row="4" Grid.ColumnSpan="2" Grid.Column="1">
+                        <Label Grid.Row="5" Content="源码链接：" />
+                        <Label Grid.Row="6" Grid.ColumnSpan="2" Grid.Column="1">
                             <Hyperlink NavigateUri="https://github.com/chenzhitong/BulkTransfer" Click="Hyperlink_Click">https://github.com/chenzhitong/BulkTransfer</Hyperlink>
                         </Label>
                     </Grid>
                 </TabItem>
             </TabControl>
-            
-
         </Grid>
-        <TextBox Grid.Column="1" Name="TextBoxOutput" Width="auto" Height="auto" Margin="5" FontFamily="幼圆" IsReadOnly="True"></TextBox>
+        <TextBlock Grid.Column="1" Margin="5"></TextBlock>
+        <TabControl Grid.Column="2">
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="输出" FontSize="20"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <TextBox  Name="TextBoxOutput" Width="auto" Height="auto" FontFamily="幼圆" IsReadOnly="True"></TextBox>
+
+            </TabItem>
+        </TabControl>
     </Grid>
-    
+
 </Window>

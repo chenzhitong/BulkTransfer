@@ -86,6 +86,42 @@
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="其他" FontSize="20"/>
+                            <TextBlock Text="合约操作" Margin="8,0,0,0" FontSize="10" Foreground="Gray" VerticalAlignment="Bottom"></TextBlock>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                            <RowDefinition Height="auto"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Label Content="Mint PEG：" Height="30" Width="75" HorizontalAlignment="Left"/>
+                        <DockPanel Grid.Row="1">
+                            <Label Content="PEG合约：" Height="30" Width="75"/>
+                            <TextBox Name="TabDPegContractHash" Height="20" Width="auto" FontFamily="幼圆" IsReadOnly="True" Text="0xe132ade7c63594eb3880ea12ce821407c3a4fd71"/>
+                        </DockPanel>
+                        <DockPanel Grid.Row="2">
+                            <Label Content="私钥：" Height="30" Width="75"/>
+                            <TextBox Name="TabDPrivateKey" Height="20" Width="auto" FontFamily="幼圆" Text=""/>
+                        </DockPanel>
+                        <DockPanel Grid.Row="3">
+                            <Label Content="Mint 金额：" Height="30" Width="75"/>
+                            <TextBox Name="TabDMintAmount" Height="20" Width="auto" FontFamily="幼圆" Text="100"/>
+                        </DockPanel>
+                        <DockPanel Grid.Row="4">
+                            <Label Content="" Height="30" Width="75"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="MintPEG_Click" Content="Mint" ToolTip="开始铸币"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Grid>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Text="设置" FontSize="20"/>
                         </StackPanel>
                     </TabItem.Header>
@@ -104,7 +140,7 @@
                             <ColumnDefinition Width="auto"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <Label Grid.Column="0" Content="种子节点：" Height="30" Width="75"/>
-                        <TextBox Grid.Column="1" Name="TabCSeedNode" Height="20" Width="auto" FontFamily="幼圆" Text="http://127.0.0.1:10332"/>
+                        <TextBox Grid.Column="1" Name="TabCSeedNode" Height="20" Width="auto" FontFamily="幼圆" Text="http://seed1.neo.org:10332"/>
                         <Button Grid.Column="2" Margin="10" Width="100" Content="连通性测试" Click="Ping_Click"></Button>
 
                         <Label Grid.Row="1" Grid.Column="0" Content="网络配置：" Height="30" Width="75"/>
@@ -112,7 +148,7 @@
                         <Button Grid.Row="1" Grid.Column="2" Height="20" Content="编辑" Margin="10" Click="Edit_Click"></Button>
 
                         <Label Grid.Row="3" Content="软件版本：" />
-                        <Label Grid.Row="3" Grid.ColumnSpan="2" Grid.Column="1" Content="v0.3" />
+                        <Label Grid.Row="3" Grid.ColumnSpan="2" Grid.Column="1" Content="v0.4" />
 
                         <Label Grid.Row="4" Content="Neo版本：" />
                         <Label Grid.Row="4" Grid.ColumnSpan="2" Grid.Column="1" Content="v3.3.0" />

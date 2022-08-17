@@ -1,7 +1,11 @@
 ﻿using Neo;
+using Neo.Network.P2P.Payloads;
 using Neo.Network.RPC;
+using Neo.SmartContract;
 using Neo.SmartContract.Native;
+using Neo.VM;
 using Neo.Wallets;
+using Newtonsoft.Json.Linq;
 using NLog;
 using System;
 using System.Diagnostics;
@@ -323,6 +327,71 @@ namespace BulkTransfer
         {
             var link = (Hyperlink)sender;
             Process.Start("explorer.exe", link.NavigateUri.ToString());
+        }
+
+        private void MintPEG_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pause) return;
+            _pause = true;
+            var action = ((Button)sender).Content.ToString();
+            try
+            {
+                if (MintPEG(action))
+                    MessageBox.Show("发送成功");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"{action}：{ex.Message}");
+                MessageBox.Show(ex.Message);
+            }
+            _pause = false;
+        }
+
+        private bool MintPEG(string action)
+        {
+            var pegContractHash = UInt160.Parse(TabDPegContractHash.Text.Trim());
+            var privateKey = TabDPrivateKey.Text.Trim();
+            var amount = new BigInteger(Convert.ToDecimal(TabDMintAmount.Text.Trim()) * 100000000);
+            var minterAccount = Utility.GetKeyPair(privateKey);
+            var minter160 = Utility.GetScriptHash(minterAccount.PublicKey.ToString(), ProtocolSettings.Default);
+            var client = LoadClient();
+            var method = "mintPEG";
+            try
+            {
+                var stacks = new []
+                {
+                    new Neo.Network.RPC.Models.RpcStack(){ Type = "Hash160", Value = minter160.ToString() },
+                    new Neo.Network.RPC.Models.RpcStack(){ Type = "Integer", Value = amount.ToString() },
+                };
+                var signers = new []{ new Signer{ Account = minter160, Scopes= WitnessScope.Global } };
+                var script = pegContractHash.MakeScript(method, minter160, amount);
+                //试运行
+                var result = client.InvokeFunctionAsync(pegContractHash.ToString(), method, stacks, signers).Result;
+                if (result.State == VMState.HALT)
+                {
+                    //创建交易
+                    var manager = new TransactionManagerFactory(client).MakeTransactionAsync(script, signers).Result;
+                    manager.AddSignature(minterAccount);
+                    var tx = manager.SignAsync().Result;                    
+                    //广播交易
+                    client.SendRawTransactionAsync(tx);
+                    TextBoxOutput.Text += $"{tx.Hash}\n";
+                    _logger.Info($"{action}：{minter160}\t{amount}\t{tx.Hash}");
+                    return true;
+                }
+                else
+                {
+                    TextBoxOutput.Text += $"{result.Exception}\n";
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                var warn = $"{action}：交易失败\t{ex.Message}\n";
+                TextBoxOutput.Text += warn;
+                _logger.Warn(warn);
+                return false;
+            }
         }
     }
 }

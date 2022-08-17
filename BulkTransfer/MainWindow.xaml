@@ -29,7 +29,7 @@
                         </Grid.RowDefinitions>
                         <DockPanel Grid.Row="0">
                             <Label Content="资产哈希：" Height="30" Width="75"/>
-                            <TextBox Name="TabAContractHash" Height="20" Width="auto" FontFamily="幼圆" Text="0xa51b176d6b9bafa1f0ff8515e462d78c296e52a3"/>
+                            <TextBox Name="TabAContractHash" Height="20" Width="auto" FontFamily="幼圆" Text="0xe132ade7c63594eb3880ea12ce821407c3a4fd71"/>
                         </DockPanel>
                         <DockPanel Grid.Row="1">
                             <Label Content="付款私钥：" Height="30" Width="75"/>
@@ -63,7 +63,7 @@
                         </Grid.RowDefinitions>
                         <DockPanel Grid.Row="0">
                             <Label Content="资产哈希：" Height="30" Width="75"/>
-                            <TextBox Name="TabBContractHash" Height="20" Width="auto" FontFamily="幼圆" Text="0xa51b176d6b9bafa1f0ff8515e462d78c296e52a3"/>
+                            <TextBox Name="TabBContractHash" Height="20" Width="auto" FontFamily="幼圆" Text="0xe132ade7c63594eb3880ea12ce821407c3a4fd71"/>
                         </DockPanel>
                         <DockPanel VerticalAlignment="Top" Grid.Row="1">
                             <Label Content="待归集私钥：" Height="30" Width="75"/>

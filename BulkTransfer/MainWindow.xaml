@@ -29,7 +29,7 @@
                         </Grid.RowDefinitions>
                         <DockPanel Grid.Row="0">
                             <Label Content="资产哈希：" Height="30" Width="75"/>
-                            <TextBox Name="TabAContractHash" Height="20" Width="auto" FontFamily="幼圆" Text="0xe132ade7c63594eb3880ea12ce821407c3a4fd71"/>
+                            <TextBox Name="TabAContractHash" Height="20" Width="auto" FontFamily="幼圆" Text="0xd2a4cff31913016155e38e474a2c06d08be276cf"/>
                         </DockPanel>
                         <DockPanel Grid.Row="1">
                             <Label Content="付款私钥：" Height="30" Width="75"/>
@@ -63,7 +63,7 @@
                         </Grid.RowDefinitions>
                         <DockPanel Grid.Row="0">
                             <Label Content="资产哈希：" Height="30" Width="75"/>
-                            <TextBox Name="TabBContractHash" Height="20" Width="auto" FontFamily="幼圆" Text="0xe132ade7c63594eb3880ea12ce821407c3a4fd71"/>
+                            <TextBox Name="TabBContractHash" Height="20" Width="auto" FontFamily="幼圆" Text="0xd2a4cff31913016155e38e474a2c06d08be276cf"/>
                         </DockPanel>
                         <DockPanel VerticalAlignment="Top" Grid.Row="1">
                             <Label Content="待归集私钥：" Height="30" Width="75"/>
@@ -79,42 +79,6 @@
                                 <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Query_Click" Content="查询余额" ToolTip="查询&quot;待归集私钥&quot;里的NEP-17资产余额和GAS余额"/>
                                 <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="GAS_Click" Content="分发手续费" ToolTip="该按钮会统计上面列表中有NEP-17余额的地址，跳转到&quot;批量付款&quot;页面并自动填写资产哈希、收款地址和金额"/>
                                 <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="Pooled_Click" Content="归集" ToolTip="将&quot;待归集私钥&quot;里的NEP-17资产转到归集地址"/>
-                            </StackPanel>
-                        </DockPanel>
-                    </Grid>
-                </TabItem>
-                <TabItem>
-                    <TabItem.Header>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="其他" FontSize="20"/>
-                            <TextBlock Text="合约操作" Margin="8,0,0,0" FontSize="10" Foreground="Gray" VerticalAlignment="Bottom"></TextBlock>
-                        </StackPanel>
-                    </TabItem.Header>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto"></RowDefinition>
-                            <RowDefinition Height="auto"></RowDefinition>
-                            <RowDefinition Height="auto"></RowDefinition>
-                            <RowDefinition Height="auto"></RowDefinition>
-                            <RowDefinition Height="auto"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Label Content="Mint PEG：" Height="30" Width="75" HorizontalAlignment="Left"/>
-                        <DockPanel Grid.Row="1">
-                            <Label Content="PEG合约：" Height="30" Width="75"/>
-                            <TextBox Name="TabDPegContractHash" Height="20" Width="auto" FontFamily="幼圆" IsReadOnly="True" Text="0xe132ade7c63594eb3880ea12ce821407c3a4fd71"/>
-                        </DockPanel>
-                        <DockPanel Grid.Row="2">
-                            <Label Content="私钥：" Height="30" Width="75"/>
-                            <TextBox Name="TabDPrivateKey" Height="20" Width="auto" FontFamily="幼圆" Text=""/>
-                        </DockPanel>
-                        <DockPanel Grid.Row="3">
-                            <Label Content="Mint 金额：" Height="30" Width="75"/>
-                            <TextBox Name="TabDMintAmount" Height="20" Width="auto" FontFamily="幼圆" Text="100"/>
-                        </DockPanel>
-                        <DockPanel Grid.Row="4">
-                            <Label Content="" Height="30" Width="75"/>
-                            <StackPanel Orientation="Horizontal">
-                                <Button Width="100" Height="30" Margin="0, 10, 10, 10" Click="MintPEG_Click" Content="Mint" ToolTip="开始铸币"/>
                             </StackPanel>
                         </DockPanel>
                     </Grid>
